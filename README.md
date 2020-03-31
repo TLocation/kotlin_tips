@@ -1,12 +1,44 @@
-# 怎么用Kotlin去提高生产力：Kotlin Tips
+怎么用Kotlin去提高生产力：Kotlin Tips
+==================================
 
-汇总Kotlin相对于Java的优势，以及怎么用Kotlin去简洁、务实、高效、安全的开发，每个小点tip都有详细的说明和案例代码，争取把每个tip分析得清楚易懂，会不断的更新维护tips，欢迎fork进来加入我们一起来维护，有问题的话欢迎提Issues。
+汇总Kotlin相对于Java的优势，以及怎么用Kotlin去简洁、务实、高效、安全的开发，每个tip都有详细的说明和案例代码，争取把每个tip分析得清楚易懂，会不断的更新维护tips，欢迎fork进来加入我们一起来维护，有问题的话欢迎提Issues。
 
-- 推荐一个Kotlin的实践项目[debug_view_kotlin](https://github.com/heimashi/debug_view_kotlin),用kotlin实现的Android浮层调试控制台，实时的显示内存、FPS、文字log
+- 推荐：Android模块化通信项目[module-service-manager](https://github.com/heimashi/module-service-manager)，支持模块间功能服务/View/Fragment的通信调用等，通过注解标示模块内需要暴露出来的服务和View，然后gradle插件会通过transform来hook编译过程，扫描出注解信息后再利用asm生成代码来向服务管理中心注册对应的服务和View，之后模块间就可以利用框架这个桥梁来调用和通信了
+- 推荐：Kotlin的实践项目[debug_view_kotlin](https://github.com/heimashi/debug_view_kotlin)，用Kotlin实现的Android浮层调试控制台，实时的显示内存、FPS、App启动时间、Activity启动时间、文字Log
+- 推荐：数据预加载项目[and-load-aot](https://github.com/heimashi/and-load-aot)，通过提前加载数据来提高页面启动速度，利用编译时注解生成加载方法的路由，在Activity启动前就去加载数据
 
+****
+## 目录
+* [Tip1-更简洁的字符串](#Tip1-更简洁的字符串)
+    * 1、三个引号  2、字符串模版
+* [Tip2-Kotlin中大多数控制结构都是表达式](#Tip2-Kotlin中大多数控制结构都是表达式)
+    * 1、语句和表达式  2、if  3、when
+* [Tip3-更好调用的函数：显式参数名及默认参数值](#Tip3-更好调用的函数-显式参数名及默认参数值)
+    * 1、显式参数名  2、默认参数值  3、@JvmOverloads 
+* [Tip4-扩展函数和属性](#Tip4-扩展函数和属性)
+    * 1、扩展函数  2、扩展属性
+* [Tip5-懒初始化bylazy和延迟初始化lateinit](#Tip5-懒初始化bylazy和延迟初始化lateinit)
+    * 1、by lazy  2、lateinit
+* [Tip6-不用再手写findViewById](#Tip6-不用再手写findViewById)
+    * 1、Activity  2、子View或者include标签  3、Fragment
+* [Tip7-利用局部函数抽取重复代码](#Tip7-利用局部函数抽取重复代码)
+    * 1、局部函数  2、扩展函数
+* [Tip8-使用数据类来快速实现model类](#Tip8-使用数据类来快速实现model类)  
+* [Tip9-用类委托来快速实现装饰器模式](#Tip9-用类委托来快速实现装饰器模式) 
+* [Tip10-Lambda表达式简化OnClickListener](#Tip10-Lambda表达式简化OnClickListener)
+* [Tip11-with函数来简化代码](#Tip11-with函数来简化代码) 
+* [Tip12-apply函数来简化代码](#Tip12-apply函数来简化代码) 
+* [Tip13-在编译阶段避免掉NullPointerException](#Tip13-在编译阶段避免掉NullPointerException)
+    * 1、可空和不可空类型  2、let  3、Elvis操作符
+* [Tip14-运算符重载](#Tip14-运算符重载) 
+* [Tip15-高阶函数简化代码](#Tip15-高阶函数简化代码) 
+* [Tip16-用Lambda来简化策略模式](#Tip16-用Lambda来简化策略模式) 
+****
 
-## Tip1- 更简洁的字符串
+## Tip1-更简洁的字符串
+[回到目录](#目录)
 
+#### 三个引号
 详见案例代码[KotlinTip1](https://github.com/heimashi/kotlin_tips/blob/master/app/src/main/java/com/sw/kotlin/tip1/KotlinTip1.kt)
 
 Kotlin中的字符串基本Java中的类似，有一点区别是加入了三个引号"""来方便长篇字符的编写。
@@ -48,6 +80,8 @@ fun testString() {
     println(js)
 }
 ```
+
+#### 字符串模版
 同时，Kotlin中引入了**字符串模版**，方便字符串的拼接，可以用$符号拼接变量和表达式
 ```kotlin
 /*
@@ -63,7 +97,7 @@ fun testString2() {
 值得注意的是，在Kotlin中，美元符号$是特殊字符，在字符串中不能直接显示，必须经过转义，方法1是用反斜杠，方法二是${'$'}
 ```kotlin
 /*
-*Kotlin中，美元符号$是特殊字符，在字符串中不能直接显示，必须经过转义，方法1是用反斜杠，方法二是${'$'}
+* Kotlin中，美元符号$是特殊字符，在字符串中不能直接显示，必须经过转义，方法1是用反斜杠，方法二是${'$'}
 * */
 fun testString3() {
     println("First content is \$strings")
@@ -71,7 +105,8 @@ fun testString3() {
 }
 ```
 
-## Tip2- Kotlin中大多数控制结构都是表达式
+## Tip2-Kotlin中大多数控制结构都是表达式
+[回到目录](#目录)
 
 首先，需要弄清楚一个概念**语句和表达式**，然后会介绍控制结构表达式的优点：**简洁**
 #### 语句和表达式是什么？
@@ -84,7 +119,7 @@ fun testString3() {
 
 详见案例代码[tip2](https://github.com/heimashi/kotlin_tips/blob/master/app/src/main/java/com/sw/kotlin/tip2)
 #### Example1：if语句
-java中，if 是语句，没有值，必须显示的return
+java中，if 是语句，没有值，必须显式的return
 ```java
 /*
 * java中的if语句
@@ -100,7 +135,7 @@ public int max(int a, int b) {
 kotlin中，if 是表达式，不是语句，因为表达式有值，可以作为值return出去
 ```kotlin
 /*
-* kotlin中，if 是表达式，不是语句，类似于java中的三木运算符a > b ? a : b
+* kotlin中，if 是表达式，不是语句，类似于java中的三目运算符a > b ? a : b
 * */
 fun max(a: Int, b: Int): Int {
     return if (a > b) a else b
@@ -191,9 +226,11 @@ fun getPoint2(grade: Int) = when {
 }
 ```
 
-## Tip3- 更好调用的函数：显示参数名/默认参数值
+## Tip3-更好调用的函数-显式参数名及默认参数值
+[回到目录](#目录)
 
-Kotlin的函数更加好调用，主要是表现在两个方面：1，显示的**标示参数名**，可以方便代码阅读；2，函数可以有**默认参数值**，可以大大**减少Java中的函数重载**。
+#### 显式参数名
+Kotlin的函数更加好调用，主要是表现在两个方面：1，显式的**标示参数名**，可以方便代码阅读；2，函数可以有**默认参数值**，可以大大**减少Java中的函数重载**。
 例如现在需要实现一个工具函数，打印列表的内容：
 详见案例代码[KotlinTip3](https://github.com/heimashi/kotlin_tips/blob/master/app/src/main/java/com/sw/kotlin/tip3/KotlinTip3.kt)
 ```kotlin
@@ -217,14 +254,16 @@ fun <T> joinToString(collection: Collection<T>,
 * */
 fun printList() {
     val list = listOf(2, 4, 0)
-    /*不标明参数名*/
+    // 不标明参数名
     println(joinToString(list, " - ", "[", "]"))
-    /*显示的标明参数名称*/
+    // 显式的标明参数名称
     println(joinToString(list, separator = " - ", prefix = "[", postfix = "]"))
 }
 ```
-如上面的代码所示，函数joinToString想要打印列表的内容，需要传人四个参数：列表、分隔符、前缀和后缀。
-由于参数很多，在后续使用该函数的时候不是很直观的知道每个参数是干什么用的，这时候可以显示的标明参数名称，增加代码可读性。
+如上面的代码所示，函数joinToString想要打印列表的内容，需要传入四个参数：列表、分隔符、前缀和后缀。
+由于参数很多，在后续使用该函数的时候不是很直观的知道每个参数是干什么用的，这时候可以显式的标明参数名称，增加代码可读性。
+
+#### 默认参数值
 同时，定义函数的时候还可以给函数默认的参数，如下所示：
 ```kotlin
 /*
@@ -253,8 +292,47 @@ fun printList3() {
 ```
 这样有了默认参数后，在使用函数时，如果不传入该参数，默认会使用默认的值，这样可以避免Java中大量的函数重载。
 
-## Tip4- 扩展函数和属性
-扩展函数和属性是Kotlin非常方便实用的一个功能，它可以让我们随意的扩展第三方的库，你如果觉得别人给的SDK的api不好用，或者不能满足你的需求，这时候你可以用扩展函数完全去自定义。
+#### @JvmOverloads
+在java与kotlin的混合项目中，会发现用kotlin实现的带默认参数的函数，在java中去调用的化就不能利用这个特性了，还是需要给所有参数赋值，像下面java这样：
+```java
+List<Integer> arr = new ArrayList<Integer>() {{add(2);add(4);add(0);}};
+String res = joinToString2(arr, "-", "", "");
+System.out.println(res);
+```
+这时候可以在kotlin的函数前添加注解@JvmOverloads，添加注解后翻译为class的时候kotlin会帮你去生成多个函数实现函数重载，kotlin代码如下：
+```kotlin
+/*
+* 通过注解@JvmOverloads解决java调用kotlin时不支持默认参数的问题
+* */
+@JvmOverloads
+fun <T> joinToString2New(collection: Collection<T>,
+                         separator: String = ", ",
+                         prefix: String = "",
+                         postfix: String = ""): String {
+    val result = StringBuilder(prefix)
+    for ((index, element) in collection.withIndex()) {
+        if (index > 0) result.append(separator)
+        result.append(element)
+    }
+    result.append(postfix)
+    return result.toString()
+}
+```
+这样以后，java调用kotlin的带默认参数的函数就跟kotlin一样方便了：
+```java
+List<Integer> arr = new ArrayList<Integer>() {{add(2);add(4);add(0);}};
+String res = joinToString2New(arr, "-");
+System.out.println(res);
+String res2 = joinToString2New(arr, "-", "=>");
+System.out.println(res2);
+```
+
+## Tip4-扩展函数和属性
+[回到目录](#目录)
+
+扩展函数和扩展属性是Kotlin非常方便实用的一个功能，它可以让我们随意的扩展第三方的库，你如果觉得别人给的SDK的Api不好用，或者不能满足你的需求，这时候你可以用扩展函数完全去自定义。
+
+#### 扩展函数
 例如String类中，我们想获取最后一个字符，String中没有这样的直接函数，你可以用.后声明这样一个扩展函数：
 详见案例代码[KotlinTip4](https://github.com/heimashi/kotlin_tips/blob/master/app/src/main/java/com/sw/kotlin/tip4/KotlinTip4.kt)
 ```kotlin
@@ -263,7 +341,7 @@ fun printList3() {
 * */
 fun String.lastChar(): Char = this.get(this.length - 1)
 /*
-*测试
+* 测试
 * */
 fun testFunExtension() {
     val str = "test extension fun";
@@ -293,6 +371,8 @@ fun printList4() {
     println(list.joinToString3("/"))
 }
 ```
+
+#### 扩展属性
 除了扩展函数，还可以扩展属性，例如我想实现String和StringBuilder通过属性去直接获得最后字符：
 ```kotlin
 /*
@@ -311,7 +391,7 @@ var StringBuilder.lastChar: Char
 /*
 * 测试
 * */
-fun testExtension(){
+fun testExtension() {
     val s = "abc"
     println(s.lastChar)
     val sb = StringBuilder("abc")
@@ -353,18 +433,108 @@ public static final void setLastChar(@NotNull StringBuilder $receiver, char valu
     $receiver.setCharAt($receiver.length() - 1, value);
 }
 ```
-查看上面的代码可知：对于扩展函数，转化为Java的时候其实就是一个静态的函数，同时这个静态函数的第一个参数就是该类的实例对象，这样把类的实例传人函数以后，函数内部就可以访问到类的公有方法。
+查看上面的代码可知：对于扩展函数，转化为Java的时候其实就是一个静态的函数，同时这个静态函数的第一个参数就是该类的实例对象，这样把类的实例传入函数以后，函数内部就可以访问到类的公有方法。
 对于扩展属性也类似，获取的扩展属性会转化为一个静态的get函数，同时这个静态函数的第一个参数就是该类的实例对象，设置的扩展属性会转化为一个静态的set函数，同时这个静态函数的第一个参数就是该类的实例对象。
-函数内部可以访问公有的方法和属性。
-- 从上面转换的源码其实可以看到**扩展函数和扩展属性适用的地方和缺陷**，有两点：
+函数内部可以访问公有的方法和属性。顶层的扩展函数是static的，**不能被override**
+- 从上面转换的源码其实可以看到**扩展函数和扩展属性适用的地方和缺陷**：
     - 扩展函数和扩展属性内**只能访问到类的公有方法和属性**，私有的和protected是访问不了的
-    - 扩展函数**不能被override**，因为Java中它是静态的函数
+    - 扩展函数**不是真的修改了原来的类**，定义一个扩展函数不是将新成员函数插入到类中，扩展函数的类型是"静态的"，不是在运行时决定类型，案例代码[StaticllyExtension.kt](https://github.com/heimashi/kotlin_tips/blob/master/app/src/main/java/com/sw/kotlin/tip4/StaticllyExtension.kt)
+        ```kotlin
+        open class C
+    
+        class D : C()
+    
+        fun C.foo() = "c"
+    
+        fun D.foo() = "d"
+    
+        /*
+        * https://kotlinlang.org/docs/reference/extensions.html
+        * Extensions do not actually modify classes they extend. By defining an extension, you do not insert new members into a class,
+        * but merely make new functions callable with the dot-notation on variables of this type. Extension functions are
+        * dispatched statically.
+        * */
+        fun printFoo(c: C) {
+          println(c.foo())
+        }
+    
+        fun testStatically() {
+          printFoo(C()) // print c
+          printFoo(D()) // also print c
+        }
+        ```
+        上面的案例中即使调用printFoo(D())还是打印出c，而不是d。转成java中会看到下面的代码，D类型在调用的时候会强制转换为C类型：
+        ```java
+        public static final String foo(@NotNull C $receiver) {
+          Intrinsics.checkParameterIsNotNull($receiver, "$receiver");
+          return "c";
+        }
+ 
+        public static final String foo(@NotNull D $receiver) {
+          Intrinsics.checkParameterIsNotNull($receiver, "$receiver");
+          return "d";
+        }
+ 
+        public static final void printFoo(@NotNull C c) {
+          Intrinsics.checkParameterIsNotNull(c, "c");
+          String var1 = foo(c);
+          System.out.println(var1);
+        }
+        public static final void testStatically() {
+          printFoo(new C());
+          printFoo((C)(new D()));
+        }
+        ```
+    
+- 声明扩展函数作为类的成员变量
+    - 上面的例子扩展函数是作为顶层函数，如果把扩展函数申明为类的成员变量，即扩展函数的作用域就在类的内部有效，案例代码[ExtensionsAsMembers.kt](https://github.com/heimashi/kotlin_tips/blob/master/app/src/main/java/com/sw/kotlin/tip4/ExtensionsAsMembers.kt)
+```kotlin
+open class D {
+}
+
+class D1 : D() {
+}
+
+open class C {
+    open fun D.foo() {
+        println("D.foo in C")
+    }
+
+    open fun D1.foo() {
+        println("D1.foo in C")
+    }
+
+    fun caller(d: D) {
+        d.foo()   // call the extension function
+    }
+}
+
+class C1 : C() {
+    override fun D.foo() {
+        println("D.foo in C1")
+    }
+
+    override fun D1.foo() {
+        println("D1.foo in C1")
+    }
+}
+
+fun testAsMembers() {
+    C().caller(D())   // prints "D.foo in C"
+    C1().caller(D())  // prints "D.foo in C1" - dispatch receiver is resolved virtually
+    C().caller(D1())  // prints "D.foo in C" - extension receiver is resolved statically
+    C1().caller(D1()) // prints "D.foo in C1"
+}
+```
+函数caller的类型是D，即使调用C().caller(D1())，打印的结果还是D.foo in C，而不是D1.foo in C，不是运行时来动态决定类型，成员扩展函数申明为open，
+一旦在子类中被override，就调用不到在父类中的扩展函数，在子类中的作用域内的只能访问到override后的函数，不能像普通函数override那样通过super关键字访问了。
+
 - 下面再举几个扩展函数的例子，让大家感受一下扩展函数的方便：
 ```kotlin
 /*
 * show toast in activity
 * */
-fun Activity.toast(msg: String){
+fun Activity.toast(msg: String) {
     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 }
 
@@ -398,7 +568,9 @@ val Context.screenHeight
 fun Context.dip2px(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 ```
 
-## Tip5- 懒初始化by lazy 和 延迟初始化lateinit
+## Tip5-懒初始化bylazy和延迟初始化lateinit
+[回到目录](#目录)
+
 #### 懒初始化by lazy
 懒初始化是指推迟一个变量的初始化时机，变量在使用的时候才去实例化，这样会更加的高效。因为我们通常会遇到这样的情况，一个变量直到使用时才需要被初始化，或者仅仅是它的初始化依赖于某些无法立即获得的上下文。
 详见案例代码[KotlinTip5](https://github.com/heimashi/kotlin_tips/blob/master/app/src/main/java/com/sw/kotlin/tip5/KotlinTip5.kt)
@@ -442,7 +614,10 @@ fun testLateInit() {
 - by lazy 修饰val的变量
 - lateinit 修饰var的变量，且变量是非空的类型
 
-## Tip6- 不用再手写findViewById
+## Tip6-不用再手写findViewById
+[回到目录](#目录)
+
+#### 在Activity中使用
 在Android的View中，会有很多代码是在声明一个View，然后通过findViewById后从xml中实例化赋值给对应的View。在kotlin中可以完全解放出来了，利用kotlin-android-extensions插件，不用再手写findViewById。步骤如下：
 详见案例代码[KotlinTip6](https://github.com/heimashi/kotlin_tips/blob/master/app/src/main/java/com/sw/kotlin/tip6/KotlinTip6.kt)
 - 步骤1，在项目的gradle中 apply plugin: 'kotlin-android-extensions'
@@ -480,7 +655,7 @@ import com.sw.kotlin.tips.R
 import kotlinx.android.synthetic.main.activity_tip6.*
 
 
-class KotlinTip6 : Activity(){
+class KotlinTip6 : Activity() {
 
     /*
     * 自动根据layout的id生成对应的view
@@ -490,7 +665,7 @@ class KotlinTip6 : Activity(){
         setContentView(R.layout.activity_tip6)
         tip6Tv.text = "Auto find view for TextView"
         tip6Img.setImageBitmap(null)
-        tip6Btn.setOnClickListener{
+        tip6Btn.setOnClickListener {
             test()
         }
     }
@@ -525,16 +700,16 @@ public final class KotlinTip6 extends Activity {
    private final void test() {
       TextView var10000 = (TextView)this._$_findCachedViewById(id.tip6Tv);
       Intrinsics.checkExpressionValueIsNotNull(var10000, "tip6Tv");
-      var10000.setText((CharSequence)"update");
+      var10000.setText((CharSequence) "update");
    }
 
    public View _$_findCachedViewById(int var1) {
-      if(this._$_findViewCache == null) {
+      if (this._$_findViewCache == null) {
          this._$_findViewCache = new HashMap();
       }
 
       View var2 = (View)this._$_findViewCache.get(Integer.valueOf(var1));
-      if(var2 == null) {
+      if (var2 == null) {
          var2 = this.findViewById(var1);
          this._$_findViewCache.put(Integer.valueOf(var1), var2);
       }
@@ -543,18 +718,46 @@ public final class KotlinTip6 extends Activity {
    }
 
    public void _$_clearFindViewByIdCache() {
-      if(this._$_findViewCache != null) {
+      if (this._$_findViewCache != null) {
          this._$_findViewCache.clear();
       }
-
    }
 }
 ```
 如上面的代码所示，在编译阶段，插件会帮我们生成视图缓存，视图由一个Hashmap结构的_$_findViewCache变量缓存，
 会根据对应的id先从缓存里查找，缓存没命中再去真正调用findViewById查找出来，再存在HashMap中。
 
-#### 在fragment中findViewByID
-在fragment中也类似，有一点区别，例子如下：
+#### 子View或者include标签中findViewById
+子子View或者include标签中，同样可以省略findViewById，但需要主要默认的activity的布局import是不会将这个include的View引入进来
+```xml
+<include layout="@layout/layout_tip6"/>
+
+//include layout
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/test_inside_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"/>
+
+</FrameLayout>
+```
+需要我们引入对应的View的id，像这样import kotlinx.android.synthetic.main.layout_tip6.*
+```kotlin
+//导入插件生成的View
+import kotlinx.android.synthetic.main.activity_tip6.*
+//include layout的View
+import kotlinx.android.synthetic.main.layout_tip6.*
+
+test_inside_id.text = "Test include"
+```
+
+#### 在Fragment中findViewById
+在Fragment中也类似，但有一点需要注意但地方，例子如下：
 ```kotlin
 class Tip6Fragment : Fragment() {
 
@@ -563,7 +766,7 @@ class Tip6Fragment : Fragment() {
         /*
         * 这时候不能在onCreateView方法里用view，需要在onViewCreate里，原理是插件用了getView来findViewById
         * */
-        //tip6Tv.text = "test2"
+        // tip6Tv.text = "test2"
         return view
     }
 
@@ -596,14 +799,14 @@ public final class Tip6Fragment extends Fragment {
    }
 
    public View _$_findCachedViewById(int var1) {
-      if(this._$_findViewCache == null) {
+      if (this._$_findViewCache == null) {
          this._$_findViewCache = new HashMap();
       }
 
       View var2 = (View)this._$_findViewCache.get(Integer.valueOf(var1));
-      if(var2 == null) {
+      if (var2 == null) {
          View var10000 = this.getView();
-         if(var10000 == null) {
+         if (var10000 == null) {
             return null;
          }
 
@@ -615,7 +818,7 @@ public final class Tip6Fragment extends Fragment {
    }
 
    public void _$_clearFindViewByIdCache() {
-      if(this._$_findViewCache != null) {
+      if (this._$_findViewCache != null) {
          this._$_findViewCache.clear();
       }
 
@@ -628,10 +831,13 @@ public final class Tip6Fragment extends Fragment {
    }
 }
 ```
-跟Activity中类似，会有一个View的HashMap，关键不同的地方在_$_findCachedViewById里面，需要getView或者当前Fragment的View，
+跟Activity中类似，会有一个View的HashMap，关键不同的地方在_$_findCachedViewById里面，需要getView获得当前Fragment的View，
 故在onViewCreated中getView还是空的，原理就好理解了。另外在onDestroyView会调用_$_clearFindViewByIdCache方法清掉缓存。
 
-## Tip7- 利用局部函数抽取重复代码
+## Tip7-利用局部函数抽取重复代码
+[回到目录](#目录)
+
+#### 局部函数抽取代码
 Kotlin中提供了函数的嵌套，在函数内部还可以定义新的函数。这样我们可以在函数中嵌套这些提前的函数，来抽取重复代码。如下面的案例所示:
 详见案例代码[KotlinTip7](https://github.com/heimashi/kotlin_tips/blob/master/app/src/main/java/com/sw/kotlin/tip7/KotlinTip7.kt)
 ```kotlin
@@ -647,13 +853,13 @@ fun saveUser(user: User) {
     if (user.email.isEmpty()) {
         throw IllegalArgumentException("Can't save user ${user.id}: empty Email")
     }
-    //save to db ...
+    // save to db ...
 }
 ```
 上面的代码在判断name、address等是否为空的处理其实很类似。这时候，我们可以利用在函数内部嵌套的声明一个通用的判空函数将相同的代码抽取到一起：
 ```kotlin
 /*
-*利用局部函数抽取相同的逻辑，去除重复的代码
+* 利用局部函数抽取相同的逻辑，去除重复的代码
 * */
 fun saveUser2(user: User) {
     fun validate(value: String, fildName: String) {
@@ -665,9 +871,11 @@ fun saveUser2(user: User) {
     validate(user.name, "Name")
     validate(user.address, "Address")
     validate(user.email, "Email")
-    //save to db ...
+    // save to db ...
 }
 ```
+
+#### 扩展函数抽取代码
 除了利用嵌套函数去抽取，此时，其实也可以用扩展函数来抽取，如下所示：
 ```kotlin
 /*
@@ -687,15 +895,17 @@ fun User.validateAll() {
 
 fun saveUser3(user: User) {
     user.validateAll()
-    //save to db ...
+    // save to db ...
 }
 ```
 
-## Tip8- 使用数据类来快速实现model类
+## Tip8-使用数据类来快速实现model类
+[回到目录](#目录)
+
 在java中要声明一个model类需要实现很多的代码，首先需要将变量声明为private，然后需要实现get和set方法，还要实现对应的hashcode equals toString方法等，如下所示：
 详见案例代码[Tip8](https://github.com/heimashi/kotlin_tips/blob/master/app/src/main/java/com/sw/kotlin/tip8)
 ```java
-    public static class User{
+    public static class User {
 
         private String name;
         private int age;
@@ -782,7 +992,9 @@ data class User2(val name: String, val age: Int, val gender: Int, var address: S
 对于Kotlin中的类，会为它的参数自动实现get set方法。而如果加上data关键字，还会自动生成equals hashcode toString。原理其实数据类中的大部分代码都是模版代码，Kotlin聪明的将这个模版代码的实现放在了编译器处理的阶段。
 
 
-## Tip9- 用类委托来快速实现装饰器模式
+## Tip9-用类委托来快速实现装饰器模式
+[回到目录](#目录)
+
 通过继承的实现容易导致脆弱性，例如如果需要修改其他类的一些行为，这时候Java中的一种策略是采用**装饰器模式**：创建一个新类，实现与原始类一样的接口并将原来的类的实例作为一个成员变量。
 与原始类拥有相同行为的方法不用修改，只需要直接转发给原始类的实例。如下所示：
 详见案例代码[KotlinTip9](https://github.com/heimashi/kotlin_tips/blob/master/app/src/main/java/com/sw/kotlin/tip9/KotlinTip9.kt)
@@ -871,7 +1083,9 @@ class CountingSet2<T>(val innerSet: MutableCollection<T> = HashSet<T>()) : Mutab
 ```
 通过by关键字将接口的实现委托给innerSet成员变量，需要修改的函数再去override就可以了，通过类委托将10行代码就可以实现上面接近100行的功能，简洁明了，去掉了模版代码。
 
-## Tip10- Lambda表达式简化代码
+## Tip10-Lambda表达式简化OnClickListener
+[回到目录](#目录)
+
 详见案例代码[KotlinTip10](https://github.com/heimashi/kotlin_tips/blob/master/app/src/main/java/com/sw/kotlin/tip10/KotlinTip10.kt)
 lambda表达式可以简化我们的代码。以Android中常见的OnClickListener来说明，在Java中我们一般这样设置：
 ```java
@@ -879,7 +1093,7 @@ lambda表达式可以简化我们的代码。以Android中常见的OnClickListen
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //handle click
+                // handle click
             }
         });
 ```
@@ -890,7 +1104,7 @@ Java中需要声明一个匿名内部类去处理，这种情况可以用lambda�
     - it作为默认参数名
     - lambda捕捉，当捕捉final变量时，它的值和lambda代码一起存储
     - 非final变量，它的值被封装在一个特殊的包装器中，这个包装器的引用会和lambda代码一起存储
-    
+
 我们来看看Kotlin中的例子：
 ```kotlin
     val textView = TextView(context)
@@ -900,7 +1114,7 @@ Java中需要声明一个匿名内部类去处理，这种情况可以用lambda�
     * */
     textView.setOnClickListener(object : android.view.View.OnClickListener {
         override fun onClick(v: android.view.View?) {
-            //handle click
+            // handle click
         }
     })
 
@@ -909,7 +1123,7 @@ Java中需要声明一个匿名内部类去处理，这种情况可以用lambda�
     * */
     textView.setOnClickListener({ v ->
         {
-            //handle click
+            // handle click
         }
     })
 ```
@@ -919,7 +1133,7 @@ Java中需要声明一个匿名内部类去处理，这种情况可以用lambda�
     * lambda的参数如果没有使用可以省略，省略的时候用it来替代
     * */
     textView.setOnClickListener({
-        //handle click
+        // handle click
     })
 ```
 lambda在参数的最后一个的情况可以将之提出去
@@ -928,7 +1142,7 @@ lambda在参数的最后一个的情况可以将之提出去
     * lambda在参数的最后一个的情况可以将之提出去
     * */
     textView.setOnClickListener() {
-        //handle click
+        // handle click
     }
 ```
 lambda提出去之后，函数如果没有其他参数括号可以省略
@@ -937,7 +1151,7 @@ lambda提出去之后，函数如果没有其他参数括号可以省略
     * lambda提出去之后，函数如果没有其他参数括号可以省略
     * */
     textView.setOnClickListener {
-        //handle click
+        // handle click
     }
 ```
 我们再看看如果自己去实现一个带lambda参数的函数应该怎么去定义：
@@ -957,7 +1171,7 @@ class View {
     }
 
     fun doSth() {
-        //some case:
+        // some case:
         listener?.onClick()
     }
 
@@ -969,9 +1183,10 @@ class View {
     }
 }
 ```
-在函数参数中需要声明lambda的类型后，再调用该函数的时候就可以传人一个lambda表达式了。
+在函数参数中需要声明lambda的类型后，再调用该函数的时候就可以传入一个lambda表达式了。
 
-## Tip11- with语句来简化代码
+## Tip11-with函数来简化代码
+[回到目录](#目录)
 
 - with 函数原型：
 ```kotlin
@@ -999,7 +1214,7 @@ fun alphabet(): String {
 在上面的函数中，result变量出现了5次，如果用with语句，可以将这5次都不用再出现了，我们来一步一步地看是怎么实现的：
 ```kotlin
 /*
-* 通过with语句，将result作为参数传人，在内部就可以通过this来表示result变量了
+* 通过with语句，将result作为参数传入，在内部就可以通过this来表示result变量了
 * */
 fun alphabet2(): String {
     val result = StringBuilder()
@@ -1013,7 +1228,7 @@ fun alphabet2(): String {
     }
 }
 ```
-通过with语句，将result作为参数传人，在内部就可以通过this来表示result变量了，而且这个this是可以省略的
+通过with语句，将result作为参数传入，在内部就可以通过this来表示result变量了，而且这个this是可以省略的
 
 ```kotlin
 /*
@@ -1034,7 +1249,7 @@ fun alphabet3(): String {
 在内部this省略掉后，现在只有一个result了，这个其实也是没必要的，于是出现了下面的最终版本：
 ```kotlin
 /*
-* 通过with语句，可以直接将对象传人，省掉对象的声明
+* 通过with语句，可以直接将对象传入，省掉对象的声明
 * */
 fun alphabet4(): String {
     return with(StringBuilder()) {
@@ -1049,7 +1264,8 @@ fun alphabet4(): String {
 ```
 像上面这样，我们可以把同一个变量的显式调用从5次变为0次，发现Kotlin的魅力了吧。
 
-## Tip12- apply语句来简化代码
+## Tip12-apply函数来简化代码
+[回到目录](#目录)
 
 - apply 函数原型：
 ```kotlin
@@ -1099,8 +1315,10 @@ fun testApply(context: Context) {
 ```
 在类实例化的时候，就可以通过apply把需要初始化的步骤全部实现，非常的简洁
 
-## Tip13- 在编译阶段避免掉NullPointerException
+## Tip13-在编译阶段避免掉NullPointerException
+[回到目录](#目录)
 
+#### 可空类型和不可空类型
 NullPointerException是Java程序员非常头痛的一个问题，我们知道Java 中分受检异常和非受检异常，NullPointerException是非受检异常，也就是说NullPointerException不需要显示的去catch住，
 往往在运行期间，程序就可能报出一个NullPointerException然后crash掉，Kotlin作为一门高效安全的语言，它尝试在编译阶段就把空指针问题显式的检测出来，把问题留在了编译阶段，让程序更加健壮。
 详见案例代码[KotlinTip13](https://github.com/heimashi/kotlin_tips/blob/master/app/src/main/java/com/sw/kotlin/tip13/KotlinTip13.kt)
@@ -1111,19 +1329,19 @@ fun testNullType() {
     /*
     * a是非空类型，下面的给a赋值为null将会编译不通过
     * */
-    //a = null
+    // a = null
     a.length
 
     /*
-   * ？声明是可空类型，可以赋值为null
-   * */
+    * ？声明是可空类型，可以赋值为null
+    * */
     var b: String? = "bb"
     b = null
     
     /*
-   * b是可空类型，直接访问可空类型将编译不通过，需要通过?.或者!!.来访问
-   * */
-    //b.length
+    * b是可空类型，直接访问可空类型将编译不通过，需要通过?.或者!!.来访问
+    * */
+    // b.length
     b?.length
     b!!.length
 }
@@ -1132,11 +1350,11 @@ fun testNullType() {
 - 对于一个可空类型：通过？声明，在访问该类型的时候直接访问不能编译通过，需要通过?.或者!!.
     - ?.  代表着如果该类型为空的话就返回null不做后续的操作，如果不为空的话才会去访问对应的方法或者属性
     - !!. 代表着如果该类型为空的话就抛出NullPointerException，如果不为空就去访问对应的方法或者属性，
-    所以只有在很少的特定场景才用这种符号，代表着程序不处理这种异常的case了，会像java代码一样抛出NullPointerException。
-    而且代码中一定不用出现下面这种代码，会让代码可读性很差而且如果有空指针异常，我们也不能马上发现是哪空了：
+      所以只有在很少的特定场景才用这种符号，代表着程序不处理这种异常的case了，会像java代码一样抛出NullPointerException。
+      而且代码中一定不用出现下面这种代码，会让代码可读性很差而且如果有空指针异常，我们也不能马上发现是哪空了：
 ```kotlin
     /*
-    * 不用链式的连续用!!.
+    * 不推荐这样的写法：链式的连续用!!.
     * */
     val user = User()
     user!!.name!!.subSequence(0,5)!!.length
@@ -1195,9 +1413,9 @@ inline fun <T, R> T.let(block: (T) -> R): R = block(this)
 fun testElvis(input: String?, user: User?) {
     val a: Int?
     if (input == null) {
-        a = input?.length
+        a = -1
     } else {
-        a = -1;
+        a = input?.length
     }
 
     if (user == null) {
@@ -1208,7 +1426,7 @@ fun testElvis(input: String?, user: User?) {
     }
 }
 ```
-Elvis操作符?:能够简化上面的操作，?:符号会在对于空的情况才会进行下面的处理，**跟?.let正好相反**，例如我们可以用两行代码来简化上面从操作：
+Elvis操作符?:能够简化上面的操作，?:符号会在符号左边为空的情况才会进行下面的处理，不为空则不会有任何操作。**跟?.let正好相反**，例如我们可以用两行代码来简化上面从操作：
 ```kotlin
 /**
  * Elvis操作符 ?: 简化对空值的处理
@@ -1220,7 +1438,8 @@ fun testElvis2(input: String?, user: User?) {
 ```
 
 
-## Tip14- 运算符重载
+## Tip14-运算符重载
+[回到目录](#目录)
 
 Kotlin支持对运算符的重载，这对于对一些对象的操作更加灵活直观。
 
@@ -1270,17 +1489,18 @@ fun testOperator() {
 
 
 
-## Tip15- 高阶函数简化代码
+## Tip15-高阶函数简化代码
+[回到目录](#目录)
 
 - 高阶函数：以另一个函数作为参数或者返回值的函数
 - 函数类型   
     - (Int, String) -> Unit
     - 参数类型->返回类型 Unit不能省略
-  
+
 ```kotlin
     val list = listOf(2, 5, 10)
     /*
-    * 传人函数来过滤
+    * 传入函数来过滤
     * */
     println(list.filter { it > 4 })
       
@@ -1296,7 +1516,7 @@ fun testOperator() {
 
 #### 函数作为参数
 
-函数作为参数，即高阶函数中，函数的参数可以是一个函数类型，例如要定义一个函数，该函数根据传人的操作函数来对2和3做相应的处理。
+函数作为参数，即高阶函数中，函数的参数可以是一个函数类型，例如要定义一个函数，该函数根据传入的操作函数来对2和3做相应的处理。
 详见案例代码[KotlinTip15](https://github.com/heimashi/kotlin_tips/blob/master/app/src/main/java/com/sw/kotlin/tip15/KotlinTip15.kt)
 
 ```kotlin
@@ -1332,7 +1552,7 @@ fun test04() {
     println("12eafsfsfdbzzsa".filter { it in 'a'..'f' })
 }
 ```
-像上面这样predicate是函数类型，它会根据传人的char来判断得到一个Boolean值。
+像上面这样predicate是函数类型，它会根据传入的char来判断得到一个Boolean值。
 
 #### 函数作为返回值
 
@@ -1353,16 +1573,18 @@ fun getShippingCostCalculator(delivery: Delivery): (Int) -> Double {
     return { 1.3 * it }
 }
 
-fun test05(){
+fun test05() {
     val calculator1 = getShippingCostCalculator(Delivery.EXPEDITED)
     val calculator2 = getShippingCostCalculator(Delivery.STANDARD)
     println("Ex costs ${calculator1(5)}")
     println("St costs ${calculator2(5)}")
 }
 ```
-如果是普通快递，采用6 + 2.1 * it的规则计算价格，如果是高级快递按照6 + 2.1 * it计算价格，根据不同的类型返回不同的计价函数。
+如果是普通快递，采用1.3 * it的规则计算价格，如果是高级快递按照6 + 2.1 * it计算价格，根据不同的类型返回不同的计价函数。
 
-## Tip16- 用Lambda来简化策略模式
+## Tip16-用Lambda来简化策略模式
+[回到目录](#目录)
+
 策略模式是常见的模式之一，java的例子如下。
 详见案例代码[Tip16](https://github.com/heimashi/kotlin_tips/blob/master/app/src/main/java/com/sw/kotlin/tip16)
 ```java
@@ -1433,7 +1655,6 @@ class Worker(private val strategy: () -> Unit) {
         strategy.invoke()
         println("END")
     }
-
 }
 
 /*
@@ -1459,4 +1680,5 @@ fun testStrategy() {
 
 ### 参考文档
 * 《Kotlin in Action》
+* https://kotlinlang.org/docs/reference/
 * https://savvyapps.com/blog/kotlin-tips-android-development
